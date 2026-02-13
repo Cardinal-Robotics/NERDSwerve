@@ -4,6 +4,7 @@
 
 package frc.robot;
 
+import edu.wpi.first.net.PortForwarder;
 import edu.wpi.first.util.datalog.BooleanLogEntry;
 import edu.wpi.first.util.datalog.DataLog;
 import edu.wpi.first.util.datalog.DoubleLogEntry;
@@ -13,7 +14,13 @@ import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 
-public class Robot extends TimedRobot {
+import org.littletonrobotics.junction.Logger;
+import org.littletonrobotics.junction.LoggedRobot;
+import org.littletonrobotics.junction.networktables.NT4Publisher;
+import org.littletonrobotics.junction.wpilog.WPILOGWriter;
+
+
+public class Robot extends LoggedRobot {
   private Command m_autonomousCommand;
 
   private RobotContainer m_robotContainer;
@@ -23,12 +30,18 @@ public class Robot extends TimedRobot {
   
   @Override
   public void robotInit() {
+    Logger.recordMetadata("NERDSwerve", "TURDSwerve"); // Set a metadata value
+
+    if (Robot.isSimulation()) {
+      Logger.addDataReceiver(new NT4Publisher());
+    }
+
+    Logger.addDataReceiver(new WPILOGWriter("/home/lvuser/logs/"));
+    Logger.start();
+
     m_robotContainer = new RobotContainer();
 
-    DataLogManager.start();
-    DataLog log = DataLogManager.getLog();
-    rightAmps = new DoubleLogEntry(log, "left drive amps");
-    leftAmps = new DoubleLogEntry(log, "right drive amps");
+    
   }
 
   @Override

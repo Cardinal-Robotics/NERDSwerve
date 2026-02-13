@@ -8,6 +8,7 @@ import com.ctre.phoenix6.hardware.Pigeon2;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.filter.SlewRateLimiter;
 import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Transform2d;
 import edu.wpi.first.math.geometry.Translation2d;
@@ -26,6 +27,8 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.constants.Constants;
 import frc.robot.constants.RobotMap;
+
+import org.littletonrobotics.junction.Logger;
 
 public class TurdSwerve extends SubsystemBase {
   private final SlewRateLimiter xLimiter = new SlewRateLimiter(0.75);
@@ -129,7 +132,14 @@ public class TurdSwerve extends SubsystemBase {
   @Override
   public void periodic() {
     odometer.update(getGyro(), new SwerveModulePosition[] {leftPod.getPodPosition(), rightPod.getPodPosition()});
-    SmartDashboard.putNumber("pigeon", getGyro().getDegrees());
+
+    // SmartDashboard.putNumber("pigeon", getGyro().getDegrees());
+    // Logger.recordOutput("YAGSL Pose", m_swerveDrive.getPose());
+
+    Pose3d pose3d = new Pose3d(odometer.getPoseMeters().transformBy(new Transform2d(new Translation2d(), new Rotation2d(odoAngleOffset + Math.PI))));
+    Logger.recordOutput("YAGSL Pose", pose3d);
+
+
     field2d.setRobotPose(odometer.getPoseMeters().transformBy(new Transform2d(new Translation2d(), new Rotation2d(odoAngleOffset + Math.PI))));
   }
   
