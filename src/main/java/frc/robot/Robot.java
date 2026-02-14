@@ -19,9 +19,6 @@ public class Robot extends LoggedRobot {
 
   private RobotContainer m_robotContainer;
 
-  DoubleLogEntry rightAmps;
-  DoubleLogEntry leftAmps;
-  
   @Override
   public void robotInit() {
     Logger.recordMetadata("NERDSwerve", "TURDSwerve"); // Set a metadata value
@@ -39,8 +36,8 @@ public class Robot extends LoggedRobot {
   @Override
   public void robotPeriodic() {
     CommandScheduler.getInstance().run();
-    leftAmps.append(RobotContainer.swerve.getDriveAmps()[0]);
-    rightAmps.append(RobotContainer.swerve.getDriveAmps()[1]);
+    Logger.recordOutput("LeftAmps", RobotContainer.swerve.getDriveAmps()[0]);
+    Logger.recordOutput("RightAmps", RobotContainer.swerve.getDriveAmps()[1]);
 
   }
 
