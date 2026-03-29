@@ -14,6 +14,7 @@ import edu.wpi.first.wpilibj.AnalogEncoder;
 import com.revrobotics.spark.SparkLowLevel.MotorType;
 import com.revrobotics.spark.config.ClosedLoopConfigAccessor;
 import com.revrobotics.spark.config.SparkMaxConfig;
+import com.ctre.phoenix6.hardware.CANcoder;
 import com.revrobotics.PersistMode;
 import com.revrobotics.RelativeEncoder;
 import com.revrobotics.ResetMode;
@@ -26,7 +27,7 @@ import frc.robot.constants.RobotMap;
 public class TurdPod extends SubsystemBase {
   private final SparkMax azimuth;
   private final SparkMax drive;
-  private final AnalogEncoder absoluteEncoder;
+  private final CANcoder absoluteEncoder;
 
   private final ClosedLoopConfigAccessor azimuthPID;
   private final RelativeEncoder azimuthEncoder;
@@ -43,7 +44,7 @@ public class TurdPod extends SubsystemBase {
   public TurdPod(int azimuthID, int driveID, int absoluteEncoderID, boolean azimuthInvert, boolean driveInvert, double absoluteEncoderOffset) {
     azimuth = new SparkMax(azimuthID, MotorType.kBrushless);
     drive = new SparkMax(driveID, MotorType.kBrushless);
-    absoluteEncoder = new AnalogEncoder(absoluteEncoderID);
+    absoluteEncoder = new CANcoder(absoluteEncoderID);
 
     azimuthEncoder = azimuth.getEncoder();
     driveEncoder = drive.getEncoder();
@@ -54,6 +55,7 @@ public class TurdPod extends SubsystemBase {
     azimuthConfig.smartCurrentLimit(Constants.azimuthAmpLimit);
     azimuthConfig.idleMode(Constants.azimuthMode);
     azimuthConfig.inverted(azimuthInvert);
+    azimuthConfig.closedLoop.pid(Constants.azimuthkP, Constants.azimuthkI, Constants.azimuthkD);
     azimuth.configure(this.azimuthConfig, ResetMode.kResetSafeParameters, PersistMode.kNoPersistParameters);
     azimuthPID = azimuth.configAccessor.closedLoop;
 
@@ -91,7 +93,7 @@ public class TurdPod extends SubsystemBase {
   }
 
   public void resetZero() {
-    double convertedPosition = absoluteEncoder.get() * RobotMap.absoluteRadiansPerEncoderRotation;
+    double convertedPosition = absoluteEncoder.getAbsolutePosition().getValueAsDouble() * RobotMap.absoluteRadiansPerEncoderRotation;
     absoluteEncoderOffset = (convertedPosition * 2*Math.PI);
     SmartDashboard.putNumber((getPod() + " Encoder Offset"), absoluteEncoderOffset);
     resetPod();
@@ -145,7 +147,7 @@ public class TurdPod extends SubsystemBase {
   }
 
   public double getAbsoluteEncoder() {
-    double convertedPosition = absoluteEncoder.get() * RobotMap.absoluteRadiansPerEncoderRotation;
+    double convertedPosition = absoluteEncoder.getAbsolutePosition().getValueAsDouble() * RobotMap.absoluteRadiansPerEncoderRotation;
     return (convertedPosition * 2*Math.PI) - absoluteEncoderOffset;
   }
 
@@ -155,7 +157,7 @@ public class TurdPod extends SubsystemBase {
 
   @Override
   public void periodic() {
-    SmartDashboard.putNumber("getabsoluteEncoder() " + absoluteEncoder.getChannel(), getAbsoluteEncoder());
+    SmartDashboard.putNumber("getabsoluteEncoder() " + absoluteEncoder.getDeviceID(), getAbsoluteEncoder());
     drive.set(speed + (azimuth.getAppliedOutput() * azimuthDriveSpeedMultiplier));
     SmartDashboard.putNumber("azimuthEncoder.getPosition() " + azimuth.getDeviceId(), azimuthEncoder.getPosition());
     SmartDashboard.putNumber("drive pos " + drive.getDeviceId(), driveEncoder.getPosition());
