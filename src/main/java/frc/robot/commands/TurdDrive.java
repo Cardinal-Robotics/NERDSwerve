@@ -53,15 +53,22 @@ public class TurdDrive extends Command {
       swerve.setAmpLimit(Constants.driveAmpLimit);
       maxSpeed = Constants.robotMaxSpeed;
     }
-    boolean deadband = Math.abs(joystickRight.get().getX()) + Math.abs(joystickRight.get().getY()) < 0.05;
-    double speedX = deadband ? 0 : -joystickRight.get().getX() * maxSpeed;
-    double speedY = deadband ? 0 : joystickRight.get().getY() * maxSpeed;
-    // double speedX = deadband ? 0 : 3.0 * Math.abs(joystickRight.get().getX()) * -joystickRight.get().getX();
-    // double speedY = deadband ? 0 : 3.0 * Math.abs(joystickRight.get().getY()) * joystickRight.get().getY();
-    double speedOmega = Math.abs(joystickLeft.get().getX()) > 0.07 ? -joystickLeft.get().getX() * Math.abs(joystickLeft.get().getX())*0.3 : 0;
+    
+    double leftHypot = Math.hypot(joystickLeft.get().getX(), joystickLeft.get().getY());
+    boolean deadband = Math.abs(leftHypot) < 0.05;
+    // On the controller, Y is up (as it should be), but in robot coordinates, X is up
+    // so you have to mix and match.
+    double speedX = deadband ? 0 : joystickLeft.get().getY() * maxSpeed;
+    double speedY = deadband ? 0 : joystickLeft.get().getX() * maxSpeed;
+    
+    
+    double rightHypot = Math.hypot(joystickRight.get().getX(), joystickRight.get().getY());
+    boolean turnDeadband = Math.abs(rightHypot) < 0.05;
+    double speedOmega = turnDeadband ? 0 : -joystickRight.get().getX() * maxSpeed;
+
+
     ChassisSpeeds speeds = new ChassisSpeeds(speedX, speedY, speedOmega);
     swerve.setRobotSpeeds(speeds);
-    
   }
 
   // Called once the command ends or is interrupted.

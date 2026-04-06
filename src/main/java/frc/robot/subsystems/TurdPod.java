@@ -14,6 +14,7 @@ import edu.wpi.first.wpilibj.AnalogEncoder;
 import com.revrobotics.spark.SparkLowLevel.MotorType;
 import com.revrobotics.spark.config.ClosedLoopConfigAccessor;
 import com.revrobotics.spark.config.SparkMaxConfig;
+import com.ctre.phoenix6.configs.MagnetSensorConfigs;
 import com.ctre.phoenix6.hardware.CANcoder;
 import com.revrobotics.PersistMode;
 import com.revrobotics.RelativeEncoder;
@@ -72,6 +73,10 @@ public class TurdPod extends SubsystemBase {
     this.absoluteEncoderOffset = absoluteEncoderOffset;
 
     resetPod();
+
+    SmartDashboard.putNumber("angle", 0);
+    SmartDashboard.putNumber("speed", 0);
+    SmartDashboard.putNumber("turnSpeed", 0);
   }
   
   public void setAmpLimit(int ampLimit) {
@@ -93,8 +98,7 @@ public class TurdPod extends SubsystemBase {
   }
 
   public void resetZero() {
-    double convertedPosition = absoluteEncoder.getAbsolutePosition().getValueAsDouble() * RobotMap.absoluteRadiansPerEncoderRotation;
-    absoluteEncoderOffset = (convertedPosition * 2*Math.PI);
+    absoluteEncoderOffset = absoluteEncoder.getAbsolutePosition().getValueAsDouble() * RobotMap.absoluteRadiansPerEncoderRotation;
     SmartDashboard.putNumber((getPod() + " Encoder Offset"), absoluteEncoderOffset);
     resetPod();
   }
@@ -134,7 +138,7 @@ public class TurdPod extends SubsystemBase {
   }
 
   public void setPodState(SwerveModuleState state) {
-    state = SwerveModuleState.optimize(state, new Rotation2d(azimuthEncoder.getPosition())); // does not account for rotations between 180 and 360?
+    state.optimize(new Rotation2d(azimuthEncoder.getPosition())); // does not account for rotations between 180 and 360?
     azimuth.getClosedLoopController().setSetpoint(state.angle.getRadians(), ControlType.kPosition);
     speed = Math.abs(state.speedMetersPerSecond) < .01 ? 0 : state.speedMetersPerSecond * driveSpeedToPower;
     SmartDashboard.putNumber("state.angle.getRadians()", state.angle.getRadians());
@@ -143,21 +147,23 @@ public class TurdPod extends SubsystemBase {
       error = error > Math.PI ? error - 2*Math.PI : error;
       error = error < -Math.PI ? error + 2*Math.PI : error;
       error *= 180 / Math.PI;
-      SmartDashboard.putNumber("error azimuth " + azimuth.getDeviceId(), error);
+    SmartDashboard.putNumber("error azimuth " + azimuth.getDeviceId(), error);
   }
 
   public double getAbsoluteEncoder() {
     double convertedPosition = absoluteEncoder.getAbsolutePosition().getValueAsDouble() * RobotMap.absoluteRadiansPerEncoderRotation;
-    return (convertedPosition * 2*Math.PI) - absoluteEncoderOffset;
+    return convertedPosition - absoluteEncoderOffset;
   }
-
+  
   public double getDriveAmp() {
     return drive.getOutputCurrent();
   }
 
   @Override
   public void periodic() {
-    SmartDashboard.putNumber("getabsoluteEncoder() " + absoluteEncoder.getDeviceID(), getAbsoluteEncoder());
+    SmartDashboard.putNumber("getAbsoluteEncoder() " + absoluteEncoder.getDeviceID(), getAbsoluteEncoder());
+    SmartDashboard.putNumber("getRawAbsoluteEncoder() " + absoluteEncoder.getDeviceID(), absoluteEncoder.getAbsolutePosition().getValueAsDouble() * RobotMap.absoluteRadiansPerEncoderRotation);
+    
     drive.set(speed + (azimuth.getAppliedOutput() * azimuthDriveSpeedMultiplier));
     SmartDashboard.putNumber("azimuthEncoder.getPosition() " + azimuth.getDeviceId(), azimuthEncoder.getPosition());
     SmartDashboard.putNumber("drive pos " + drive.getDeviceId(), driveEncoder.getPosition());
