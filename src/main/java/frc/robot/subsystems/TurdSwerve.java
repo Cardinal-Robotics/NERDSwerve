@@ -49,6 +49,9 @@ public class TurdSwerve extends SubsystemBase {
   private GenericEntry azimuthP = tab.add("azimuth P", Constants.azimuthkP).getEntry();
   private GenericEntry azimuthI = tab.add("azimuth I", Constants.azimuthkI).getEntry();
   private GenericEntry azimuthD = tab.add("azimuth D", Constants.azimuthkD).getEntry();
+  private GenericEntry gyroP = tab.add("gyro P", Constants.gyroP).getEntry();
+  private GenericEntry gyroI = tab.add("gyro I", Constants.gyroI).getEntry();
+  private GenericEntry gyroD = tab.add("gyro D", Constants.gyroD).getEntry();
   private GenericEntry azimuthIzone = tab.add("azimuth IZone", Constants.azimuthkD).getEntry();
   private GenericEntry ADMult = tab.add("azimuth-drive speed multiplier", Constants.azimuthDriveSpeedMultiplier).getEntry();
 
@@ -63,6 +66,12 @@ public class TurdSwerve extends SubsystemBase {
 
   public TurdSwerve() {
     GyroPID.enableContinuousInput(0.0, 2*Math.PI);
+    
+    // As soon as the robot is enabled, it will use the last rotation
+    // it faced. This is to prevent the dramatic spin. 
+    if(DriverStation.isDisabled()) {
+      targetAngle = getGyro().getRadians();
+    }
     // gyro.configAllSettings(new Pigeon2Configuration());
   }
 
@@ -88,6 +97,10 @@ public class TurdSwerve extends SubsystemBase {
     leftPod.setPID(azimuthP.getDouble(Constants.azimuthkP), azimuthI.getDouble(Constants.azimuthkI), azimuthD.getDouble(Constants.azimuthkD), azimuthIzone.getDouble(Constants.azimuthkIz), Constants.azimuthMaxOutput, ADMult.getDouble(Constants.azimuthDriveSpeedMultiplier));
     rightPod.setPID(azimuthP.getDouble(Constants.azimuthkP), azimuthI.getDouble(Constants.azimuthkI), azimuthD.getDouble(Constants.azimuthkD), azimuthIzone.getDouble(Constants.azimuthkIz), Constants.azimuthMaxOutput, ADMult.getDouble(Constants.azimuthDriveSpeedMultiplier));
     resetOdometry(new Pose2d(new Translation2d(8.0, 4.2), new Rotation2d()));
+  }
+  
+  public void updatePID() {
+    GyroPID.setPID(gyroP.getDouble(Constants.gyroP), gyroI.getDouble(Constants.gyroI), gyroD.getDouble(Constants.gyroD));
   }
 
   public void straightenWheels() {
@@ -123,6 +136,10 @@ public class TurdSwerve extends SubsystemBase {
   //   leftPod.setPodState(state);
   // }
 
+  public void setTargetAngle(Double angle) {
+    this.targetAngle = angle;
+  }
+
   public void setRobotSpeeds(ChassisSpeeds chassisSpeeds) {
     boolean manualTurn = true;//Math.abs(chassisSpeeds.omegaRadiansPerSecond) > 0.1;
     // chassisSpeeds = chassisSpeeds.times(robotMaxSpeed);
@@ -130,15 +147,12 @@ public class TurdSwerve extends SubsystemBase {
       xLimiter.calculate(chassisSpeeds.vxMetersPerSecond),
       yLimiter.calculate(chassisSpeeds.vyMetersPerSecond),
       manualTurn ? 
-        chassisSpeeds.omegaRadiansPerSecond * 3.0 
+        chassisSpeeds.omegaRadiansPerSecond 
         : GyroPID.calculate(getGyro().getRadians(), targetAngle), getGyro()
     );
 
     SwerveModuleState[] states = RobotMap.drivetrainKinematics.toSwerveModuleStates(chassisSpeeds);
     SwerveDriveKinematics.desaturateWheelSpeeds(states, Constants.podMaxSpeed);
-    if (manualTurn) {
-    targetAngle = getGyro().getRadians() + (chassisSpeeds.omegaRadiansPerSecond / 2.0);
-    }
 
     leftPod.setPodState(states[0]);
     rightPod.setPodState(states[1]);

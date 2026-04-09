@@ -35,7 +35,6 @@ public class TurdPod extends SubsystemBase {
   private final RelativeEncoder driveEncoder;
 
   private double azimuthDriveSpeedMultiplier;
-  private double speed = 0;
   private double absoluteEncoderOffset;
   private double driveSpeedToPower = Constants.driveSpeedToPower;
 
@@ -53,6 +52,9 @@ public class TurdPod extends SubsystemBase {
     // Azimuth Configuration
     this.azimuthConfig = new SparkMaxConfig();
     azimuthConfig.encoder.positionConversionFactor(RobotMap.azimuthRadiansPerMotorRotation);
+    azimuthConfig.closedLoop.positionWrappingEnabled(true);
+    azimuthConfig.closedLoop.positionWrappingMinInput(-Math.PI);
+    azimuthConfig.closedLoop.positionWrappingMaxInput(Math.PI);
     azimuthConfig.smartCurrentLimit(Constants.azimuthAmpLimit);
     azimuthConfig.idleMode(Constants.azimuthMode);
     azimuthConfig.inverted(azimuthInvert);
@@ -62,7 +64,10 @@ public class TurdPod extends SubsystemBase {
 
     // Drive Configuration
     this.driveConfig = new SparkMaxConfig();
+    driveConfig.encoder.velocityConversionFactor(RobotMap.driveMetersPerMotorRotation / 60.0);
     driveConfig.encoder.positionConversionFactor(RobotMap.driveMetersPerMotorRotation);
+    driveConfig.closedLoop.pid(Constants.drivekP, Constants.drivekI, Constants.drivekD);
+    driveConfig.closedLoop.feedForward.kV(RobotMap.drivingVelocityFeedForward);
     driveConfig.openLoopRampRate(Constants.driveMotorRampRate);
     driveConfig.smartCurrentLimit(Constants.driveAmpLimit);
     driveConfig.idleMode(Constants.driveMode);
@@ -73,10 +78,6 @@ public class TurdPod extends SubsystemBase {
     this.absoluteEncoderOffset = absoluteEncoderOffset;
 
     resetPod();
-
-    SmartDashboard.putNumber("angle", 0);
-    SmartDashboard.putNumber("speed", 0);
-    SmartDashboard.putNumber("turnSpeed", 0);
   }
   
   public void setAmpLimit(int ampLimit) {
@@ -140,8 +141,11 @@ public class TurdPod extends SubsystemBase {
   public void setPodState(SwerveModuleState state) {
     state.optimize(new Rotation2d(azimuthEncoder.getPosition())); // does not account for rotations between 180 and 360?
     azimuth.getClosedLoopController().setSetpoint(state.angle.getRadians(), ControlType.kPosition);
-    speed = Math.abs(state.speedMetersPerSecond) < .01 ? 0 : state.speedMetersPerSecond * driveSpeedToPower;
+    drive.getClosedLoopController().setSetpoint(state.speedMetersPerSecond > 0.1 ? state.speedMetersPerSecond : 0, ControlType.kVelocity);
+    //drive.set(state.speedMetersPerSecond);
     SmartDashboard.putNumber("state.angle.getRadians()", state.angle.getRadians());
+    SmartDashboard.putNumber("Target Velocity " + drive.getDeviceId(), state.speedMetersPerSecond);
+
 
     double error = (state.angle.getRadians() - azimuthEncoder.getPosition()) % (2*Math.PI);
       error = error > Math.PI ? error - 2*Math.PI : error;
@@ -161,10 +165,11 @@ public class TurdPod extends SubsystemBase {
 
   @Override
   public void periodic() {
+    SmartDashboard.putNumber("Velocity " + drive.getDeviceId(), drive.getEncoder().getVelocity());
+
     SmartDashboard.putNumber("getAbsoluteEncoder() " + absoluteEncoder.getDeviceID(), getAbsoluteEncoder());
     SmartDashboard.putNumber("getRawAbsoluteEncoder() " + absoluteEncoder.getDeviceID(), absoluteEncoder.getAbsolutePosition().getValueAsDouble() * RobotMap.absoluteRadiansPerEncoderRotation);
     
-    drive.set(speed + (azimuth.getAppliedOutput() * azimuthDriveSpeedMultiplier));
     SmartDashboard.putNumber("azimuthEncoder.getPosition() " + azimuth.getDeviceId(), azimuthEncoder.getPosition());
     SmartDashboard.putNumber("drive pos " + drive.getDeviceId(), driveEncoder.getPosition());
     SmartDashboard.putNumber("azimuth.getoutputcurrent()" + azimuth.getDeviceId(), azimuth.getOutputCurrent());

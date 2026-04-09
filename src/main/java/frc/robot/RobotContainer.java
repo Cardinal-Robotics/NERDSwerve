@@ -43,7 +43,8 @@ public class RobotContainer {
     driverCommand.rightBumper().and(driverRaw::getYButton).onTrue(new ResetZeroes(swerve));
     driverCommand.rightBumper().and(driverRaw::getXButton).whileTrue(new RevertZeroes(swerve));
     driverCommand.start().whileTrue(new InstantCommand(swerve::resetPods, swerve));
-    driverCommand.a().whileTrue(new InstantCommand(swerve::resetPods, swerve));
+    driverCommand.a().whileTrue(new InstantCommand(swerve::straightenWheels, swerve).repeatedly());
+    driverCommand.b().whileTrue(new InstantCommand(swerve::updatePID, swerve));
     driverCommand.y().whileTrue(new InstantCommand(swerve::resetGyro, swerve));
     //driverCommand.a().whileTrue(new InstantCommand(swerve::straightenWheels, swerve));
   }

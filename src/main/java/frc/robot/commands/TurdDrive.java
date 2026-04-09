@@ -53,21 +53,29 @@ public class TurdDrive extends Command {
       swerve.setAmpLimit(Constants.driveAmpLimit);
       maxSpeed = Constants.robotMaxSpeed;
     }
+
+    // Somehow the RIO is getting stressed by calling this multiple times?
+    Translation2d joystickLeftValue = joystickLeft.get();
+    Translation2d joystickRightValue = joystickRight.get();
     
-    double leftHypot = Math.hypot(joystickLeft.get().getX(), joystickLeft.get().getY());
+    double leftHypot = Math.hypot(joystickLeftValue.getX(), joystickLeftValue.getY());
     boolean deadband = Math.abs(leftHypot) < 0.05;
     // On the controller, Y is up (as it should be), but in robot coordinates, X is up
     // so you have to mix and match.
-    double speedX = deadband ? 0 : joystickLeft.get().getY() * maxSpeed;
-    double speedY = deadband ? 0 : joystickLeft.get().getX() * maxSpeed;
+    double speedX = deadband ? 0 : joystickLeftValue.getY() * maxSpeed;
+    double speedY = deadband ? 0 : joystickLeftValue.getX() * maxSpeed;
     
     
-    double rightHypot = Math.hypot(joystickRight.get().getX(), joystickRight.get().getY());
+    double rightHypot = Math.hypot(joystickRightValue.getX(), joystickRightValue.getY());
     boolean turnDeadband = Math.abs(rightHypot) < 0.05;
-    double speedOmega = turnDeadband ? 0 : -joystickRight.get().getX() * maxSpeed;
 
+    // If (in TurdSwerve.java) manualTurn = true, speedOmega is used.
+    // If manualTurn = false, targetAngle is used. 
+    double speedOmega = turnDeadband ? 0 : -joystickRightValue.getX() * maxSpeed;
+    double targetAngle = Math.atan2(joystickRightValue.getY(), joystickRightValue.getX());
 
     ChassisSpeeds speeds = new ChassisSpeeds(speedX, speedY, speedOmega);
+    swerve.setTargetAngle(targetAngle);
     swerve.setRobotSpeeds(speeds);
   }
 

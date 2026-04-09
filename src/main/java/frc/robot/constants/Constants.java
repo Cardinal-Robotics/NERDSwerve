@@ -10,9 +10,9 @@ import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
 public final class Constants {
     public static final int driverPort = 0;
 
-    public static final double robotMaxSpeed = 0.25;
+    public static final double robotMaxSpeed = 1.5;
 
-    public static final double gyroP = 2;
+    public static final double gyroP = 0.5;
     public static final double gyroI = 0.0;
     public static final double gyroD = 0.00;
 
@@ -27,6 +27,11 @@ public final class Constants {
     public static final double azimuthkI = 0.0;
     public static final double azimuthkD = 0.003;
     public static final double azimuthkIz = 0;
+    
+    public static final double drivekP = 0.4;
+    public static final double drivekI = 0.0;
+    public static final double drivekD = 0.0;
+    public static final double drivekIz = 0;
 
     public static final double azimuthDriveSpeedMultiplier = 0;//0.5;
 
@@ -40,5 +45,4 @@ public final class Constants {
     public static final double driveMotorRampRate = 0.2;
 
     public static final double podMaxSpeed = 1;
-
 }
