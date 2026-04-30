@@ -37,11 +37,10 @@ public final class RobotMap {
             robotCenter.plus(leftPodPosition), robotCenter.plus(rightPodPosition));
 
     public static final double leftAbsoluteEncoderOffset = 1.2916118233997098;// absolute encoder reading at position
-    public static final double rightAbsoluteEncoderOffset = 0.;// gears facing inwards: fwd/bck TODO:
+    public static final double rightAbsoluteEncoderOffset = 0.044485442848683596;// gears facing inwards: fwd/bck TODO:
                                                                                 // less janky alignment
     
     
-                                                                                
     // Calculations required for driving motor conversion factors and feed forward
     public static final double kFreeSpeedRpm = 5676;
     public static final double kDrivingMotorFreeSpeedRps = kFreeSpeedRpm / 60;
