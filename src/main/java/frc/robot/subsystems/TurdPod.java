@@ -14,6 +14,7 @@ import edu.wpi.first.wpilibj.AnalogEncoder;
 import com.revrobotics.spark.SparkLowLevel.MotorType;
 import com.revrobotics.spark.config.ClosedLoopConfigAccessor;
 import com.revrobotics.spark.config.SparkMaxConfig;
+import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
 import com.ctre.phoenix6.configs.MagnetSensorConfigs;
 import com.ctre.phoenix6.hardware.CANcoder;
 import com.revrobotics.PersistMode;
@@ -59,9 +60,10 @@ public class TurdPod extends SubsystemBase {
     azimuthConfig.idleMode(Constants.azimuthMode);
     azimuthConfig.inverted(azimuthInvert);
     azimuthConfig.closedLoop.pid(Constants.azimuthkP, Constants.azimuthkI, Constants.azimuthkD);
+    azimuthConfig.idleMode(IdleMode.kBrake);
     azimuth.configure(this.azimuthConfig, ResetMode.kResetSafeParameters, PersistMode.kNoPersistParameters);
     azimuthPID = azimuth.configAccessor.closedLoop;
-
+    
     // Drive Configuration
     this.driveConfig = new SparkMaxConfig();
     driveConfig.encoder.velocityConversionFactor(RobotMap.driveMetersPerMotorRotation / 60.0);
@@ -72,6 +74,7 @@ public class TurdPod extends SubsystemBase {
     driveConfig.smartCurrentLimit(Constants.driveAmpLimit);
     driveConfig.idleMode(Constants.driveMode);
     driveConfig.inverted(driveInvert);    
+    driveConfig.idleMode(IdleMode.kBrake);
     drive.configure(this.driveConfig, ResetMode.kResetSafeParameters, PersistMode.kNoPersistParameters);
     
     // absoluteEncoder.setPositionOffset(absoluteEncoderOffset);
@@ -81,8 +84,8 @@ public class TurdPod extends SubsystemBase {
   }
   
   public void setAmpLimit(int ampLimit) {
-    driveConfig.smartCurrentLimit(ampLimit);
-    drive.configure(this.driveConfig, ResetMode.kResetSafeParameters, PersistMode.kNoPersistParameters);
+    //driveConfig.smartCurrentLimit(ampLimit);
+    //drive.configure(this.driveConfig, ResetMode.kResetSafeParameters, PersistMode.kNoPersistParameters);
   } 
 
   // public void setDriveSpeedtoPower(double driveSpeedToPower) {
@@ -141,8 +144,8 @@ public class TurdPod extends SubsystemBase {
   public void setPodState(SwerveModuleState state) {
     state.optimize(new Rotation2d(azimuthEncoder.getPosition())); // does not account for rotations between 180 and 360?
     azimuth.getClosedLoopController().setSetpoint(state.angle.getRadians(), ControlType.kPosition);
-    drive.getClosedLoopController().setSetpoint(state.speedMetersPerSecond > 0.1 ? state.speedMetersPerSecond : 0, ControlType.kVelocity);
-    //drive.set(state.speedMetersPerSecond);
+    drive.getClosedLoopController().setSetpoint(state.speedMetersPerSecond, ControlType.kVelocity);
+    SmartDashboard.putNumber("State", state.speedMetersPerSecond);
     SmartDashboard.putNumber("state.angle.getRadians()", state.angle.getRadians());
     SmartDashboard.putNumber("Target Velocity " + drive.getDeviceId(), state.speedMetersPerSecond);
 

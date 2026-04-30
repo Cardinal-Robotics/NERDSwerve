@@ -58,8 +58,8 @@ public class TurdDrive extends Command {
     Translation2d joystickLeftValue = joystickLeft.get();
     Translation2d joystickRightValue = joystickRight.get();
     
-    double leftHypot = Math.hypot(joystickLeftValue.getX(), joystickLeftValue.getY());
-    boolean deadband = Math.abs(leftHypot) < 0.05;
+    double driveHypot = Math.hypot(joystickLeftValue.getX(), joystickLeftValue.getY());
+    boolean deadband = Math.abs(driveHypot) < 0.07;
     // On the controller, Y is up (as it should be), but in robot coordinates, X is up
     // so you have to mix and match.
     double speedX = deadband ? 0 : joystickLeftValue.getY() * maxSpeed;
@@ -67,16 +67,17 @@ public class TurdDrive extends Command {
     
     
     double rightHypot = Math.hypot(joystickRightValue.getX(), joystickRightValue.getY());
-    boolean turnDeadband = Math.abs(rightHypot) < 0.05;
+    boolean turnDeadband = Math.abs(rightHypot) < 0.07;
 
     // If (in TurdSwerve.java) manualTurn = true, speedOmega is used.
     // If manualTurn = false, targetAngle is used. 
-    double speedOmega = turnDeadband ? 0 : -joystickRightValue.getX() * maxSpeed;
-    double targetAngle = Math.atan2(joystickRightValue.getY(), joystickRightValue.getX());
+    double speedOmega = turnDeadband ? 0 : joystickRightValue.getX() * maxSpeed;
+    double targetAngle = Math.atan2(joystickRightValue.getY(), joystickRightValue.getX()) + (Math.PI / 2);
 
     ChassisSpeeds speeds = new ChassisSpeeds(speedX, speedY, speedOmega);
-    swerve.setTargetAngle(targetAngle);
+    if(!turnDeadband) swerve.setTargetAngle(targetAngle);
     swerve.setRobotSpeeds(speeds);
+
   }
 
   // Called once the command ends or is interrupted.

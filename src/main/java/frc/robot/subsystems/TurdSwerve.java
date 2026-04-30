@@ -34,8 +34,8 @@ import static edu.wpi.first.units.Units.MetersPerSecond;
 import org.littletonrobotics.junction.Logger;
 
 public class TurdSwerve extends SubsystemBase {
-  private final SlewRateLimiter xLimiter = new SlewRateLimiter(0.75);
-  private final SlewRateLimiter yLimiter = new SlewRateLimiter(0.75);
+  private final SlewRateLimiter xLimiter = new SlewRateLimiter(5);
+  private final SlewRateLimiter yLimiter = new SlewRateLimiter(5);
   private final Pigeon2 gyro = new Pigeon2(RobotMap.pigeonID);
   private final TurdPod leftPod = new TurdPod(RobotMap.leftAzimuthID, RobotMap.leftDriveID, RobotMap.leftAbsoluteEncoderID, RobotMap.leftAzimuthInvert, RobotMap.leftDriveInvert, RobotMap.leftAbsoluteEncoderOffset);
   private final TurdPod rightPod = new TurdPod(RobotMap.rightAzimuthID, RobotMap.rightDriveID, RobotMap.rightAbsoluteEncoderID, RobotMap.rightAzimuthInvert, RobotMap.rightDriveInvert, RobotMap.rightAbsoluteEncoderOffset);
@@ -67,11 +67,6 @@ public class TurdSwerve extends SubsystemBase {
   public TurdSwerve() {
     GyroPID.enableContinuousInput(0.0, 2*Math.PI);
     
-    // As soon as the robot is enabled, it will use the last rotation
-    // it faced. This is to prevent the dramatic spin. 
-    if(DriverStation.isDisabled()) {
-      targetAngle = getGyro().getRadians();
-    }
     // gyro.configAllSettings(new Pigeon2Configuration());
   }
 
@@ -89,6 +84,7 @@ public class TurdSwerve extends SubsystemBase {
     odoAngleOffset = DriverStation.getAlliance().get() == Alliance.Red ? Math.PI * 0.5 : Math.PI * 1.5;
     odometer.resetPosition(new Rotation2d(odoAngleOffset), new SwerveModulePosition[] {leftPod.getPodPosition(), rightPod.getPodPosition()}, pose);
   }
+
 
   public void resetPods() {
     resetGyro();
@@ -141,7 +137,7 @@ public class TurdSwerve extends SubsystemBase {
   }
 
   public void setRobotSpeeds(ChassisSpeeds chassisSpeeds) {
-    boolean manualTurn = true;//Math.abs(chassisSpeeds.omegaRadiansPerSecond) > 0.1;
+    boolean manualTurn = false;//Math.abs(chassisSpeeds.omegaRadiansPerSecond) > 0.1;
     // chassisSpeeds = chassisSpeeds.times(robotMaxSpeed);
     chassisSpeeds = ChassisSpeeds.fromRobotRelativeSpeeds(
       xLimiter.calculate(chassisSpeeds.vxMetersPerSecond),
@@ -164,6 +160,12 @@ public class TurdSwerve extends SubsystemBase {
 
     // SmartDashboard.putNumber("pigeon", getGyro().getDegrees());
     // Logger.recordOutput("YAGSL Pose", m_swerveDrive.getPose());
+    
+    // As soon as the robot is enabled, it will use the last rotation
+    // it faced. This is to prevent the dramatic spin. 
+    if(DriverStation.isDisabled()) {
+      targetAngle = getGyro().getRadians();
+    }
 
     Pose3d pose3d = new Pose3d(odometer.getPoseMeters().transformBy(new Transform2d(new Translation2d(), new Rotation2d(odoAngleOffset + Math.PI))));
     Logger.recordOutput("YAGSL Pose", pose3d);

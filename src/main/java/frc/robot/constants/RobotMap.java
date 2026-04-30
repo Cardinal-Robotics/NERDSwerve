@@ -11,10 +11,10 @@ import edu.wpi.first.math.util.Units;
 /** CAN ID, Invert, Pod Positions, Offsets, Conversion Rates */
 public final class RobotMap {
     public static final int leftAzimuthID = 17;// BL
-    public static final int rightAzimuthID = 13;// FR
+    public static final int rightAzimuthID = 14;// FR
 
     public static final int leftDriveID = 18;// BL
-    public static final int rightDriveID = 14;// FR
+    public static final int rightDriveID = 13;// FR
 
     public static final int leftAbsoluteEncoderID = 4;
     public static final int rightAbsoluteEncoderID = 3;
@@ -34,13 +34,14 @@ public final class RobotMap {
     public static final Translation2d rightPodPosition = new Translation2d(Units.inchesToMeters(5.5),
             -Units.inchesToMeters(5.5));
     public static final SwerveDriveKinematics drivetrainKinematics = new SwerveDriveKinematics(
-            robotCenter.minus(leftPodPosition), robotCenter.minus(rightPodPosition));
+            robotCenter.plus(leftPodPosition), robotCenter.plus(rightPodPosition));
 
-    public static final double leftAbsoluteEncoderOffset = -2.1306993143731554;// absolute encoder reading at position
-    public static final double rightAbsoluteEncoderOffset = 1.4680196140065587;// gears facing inwards: fwd/bck TODO:
+    public static final double leftAbsoluteEncoderOffset = 1.2916118233997098;// absolute encoder reading at position
+    public static final double rightAbsoluteEncoderOffset = 0.;// gears facing inwards: fwd/bck TODO:
                                                                                 // less janky alignment
     
     
+                                                                                
     // Calculations required for driving motor conversion factors and feed forward
     public static final double kFreeSpeedRpm = 5676;
     public static final double kDrivingMotorFreeSpeedRps = kFreeSpeedRpm / 60;
