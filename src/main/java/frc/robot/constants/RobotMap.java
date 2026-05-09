@@ -36,8 +36,8 @@ public final class RobotMap {
     public static final SwerveDriveKinematics drivetrainKinematics = new SwerveDriveKinematics(
             robotCenter.plus(leftPodPosition), robotCenter.plus(rightPodPosition));
 
-    public static final double leftAbsoluteEncoderOffset = 1.2916118233997098;// absolute encoder reading at position
-    public static final double rightAbsoluteEncoderOffset = 0.044485442848683596;// gears facing inwards: fwd/bck TODO:
+    public static final double leftAbsoluteEncoderOffset = -1.896000253826652;// absolute encoder reading at position
+    public static final double rightAbsoluteEncoderOffset = -1.024699166307608;// gears facing inwards: fwd/bck TODO:
                                                                                 // less janky alignment
     
     
