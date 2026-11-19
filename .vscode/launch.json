@@ -22,6 +22,83 @@
       "name": "WPILib roboRIO Debug",
       "request": "launch",
       "desktop": false
+    }{
+  "gyro": {
+    "type": "pigeon2",
+    "id": 13,
+    "canbus": ""
+  },
+  "gyroInvert": false,
+  "gyroAxis": "yaw",
+  "modules": [
+    "frontleft.json",
+    "frontright.json",
+    "backleft.json",
+    "backright.json"
+  ]
+} {
+  "gearing": {
+    "drive": {
+      "gearRatio": 6.75,
+      "diameter": 4.0
+    },
+    "angle": {
+      "gearRatio": 21.42857
     }
+  },
+  "statorCurrentLimit": {
+    "drive": 40,
+    "angle": 20
+  }
+}
+{
+  "drive": {
+    "p": 0.01,
+    "i": 0.0,
+    "d": 0.0,
+    "f": 0.0,
+    "s": 0.0,
+    "v": 0.0,
+    "a": 0.0
+  },
+  "angle": {
+    "p": 0.005,
+    "i": 0.0,
+    "d": 0.0,
+    "f": 0.0,
+    "s": 0.0,
+    "v": 0.0,
+    "a": 0.0
+  }
+}
+{
+  "location": {
+    "x": 12.5,
+    "y": 12.5
+  },
+  "drive": {
+    "type": "sparkmax_neo",
+    "id": 1,
+    "canbus": ""
+  },
+  "angle": {
+    "type": "sparkmax_neo",
+    "id": 2,
+    "canbus": ""
+  },
+  "absoluteEncoder": {
+    "type": "cancoder_can",
+    "id": 3,
+    "canbus": ""
+  },
+  "inverted": {
+    "drive": false,
+    "angle": false
+  },
+  "absoluteEncoderInverted": false,
+  "absoluteEncoderOffset": 0.0
+}
+
+
   ]
 }
